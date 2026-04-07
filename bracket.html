@@ -95,6 +95,20 @@
       background: #047857;
     }
 
+    .nav-btn {
+      display: inline-block;
+      padding: 12px 18px;
+      background: #64748b;
+      color: white;
+      text-decoration: none;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+
+    .nav-btn:hover {
+      background: #475569;
+    }
+
     .layout {
       display: grid;
       grid-template-columns: 1.2fr 1fr;
@@ -241,6 +255,7 @@
         <button class="secondary" onclick="nextStep()">下一步</button>
         <button class="success" onclick="autoPlay()">自動播放</button>
         <button class="secondary" onclick="resetDemo()">重設</button>
+        <a href="index.html" class="nav-btn">前往瀏覽器 Stack</a>
       </div>
       <div class="hint">只輸入這些符號：() [] {}</div>
     </div>
