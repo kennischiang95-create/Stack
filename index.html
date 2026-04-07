@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>瀏覽器 Stack 模擬</title>
+    <style>
+        body {
+            font-family: "Microsoft JhengHei", Arial, sans-serif;
+            text-align: center;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 30px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        .input-area {
+            margin: 20px 0;
+        }
+
+        input {
+            padding: 8px;
+            width: 220px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 8px 14px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .stack-container {
+            display: inline-block;
+            margin: 20px;
+            vertical-align: top;
+        }
+
+        .stack {
+            margin: 20px auto;
+            width: 220px;
+            min-height: 60px;
+        }
+
+        .item {
+            border: 2px solid #333;
+            padding: 12px;
+            margin: 6px 0;
+            background: #b9dce8;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .hint {
+            color: #555;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🌐 瀏覽器 Stack 模擬</h1>
+    <h2>目前頁面：<span id="current">首頁</span></h2>
+
+    <div class="input-area">
+        <input type="text" id="url" placeholder="輸入新頁面名稱">
+        <br><br>
+        <button onclick="visit()">前往頁面</button>
+        <button onclick="goBack()">返回</button>
+        <button onclick="goForward()">前進</button>
+    </div>
+
+    <div class="stack-container">
+        <h3>⬅ 返回堆疊（Back Stack）</h3>
+        <div id="backStack" class="stack"></div>
+    </div>
+
+    <div class="stack-container">
+        <h3>➡ 前進堆疊（Forward Stack）</h3>
+        <div id="forwardStack" class="stack"></div>
+    </div>
+
+    <p class="hint">提示：輸入頁面名稱後按「前往頁面」，再試試看「返回」和「前進」。</p>
+
+    <script>
+        let backStack = [];
+        let forwardStack = [];
+        let current = "首頁";
+
+        function updateUI() {
+            document.getElementById("current").innerText = current;
+
+            document.getElementById("backStack").innerHTML =
+                backStack.length === 0
+                    ? "<div class='item'>（空）</div>"
+                    : backStack.slice().reverse().map(x => `<div class="item">${x}</div>`).join("");
+
+            document.getElementById("forwardStack").innerHTML =
+                forwardStack.length === 0
+                    ? "<div class='item'>（空）</div>"
+                    : forwardStack.slice().reverse().map(x => `<div class="item">${x}</div>`).join("");
+        }
+
+        function visit() {
+            let url = document.getElementById("url").value.trim();
+            if (!url) return;
+
+            backStack.push(current);
+            current = url;
+            forwardStack = [];
+            document.getElementById("url").value = "";
+
+            updateUI();
+        }
+
+        function goBack() {
+            if (backStack.length === 0) {
+                alert("沒有上一頁了！");
+                return;
+            }
+
+            forwardStack.push(current);
+            current = backStack.pop();
+            updateUI();
+        }
+
+        function goForward() {
+            if (forwardStack.length === 0) {
+                alert("沒有下一頁了！");
+                return;
+            }
+
+            backStack.push(current);
+            current = forwardStack.pop();
+            updateUI();
+        }
+
+        updateUI();
+    </script>
+
+</body>
+</html>
