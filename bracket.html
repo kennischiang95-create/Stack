@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>括號匹配 Stack 模擬</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Microsoft JhengHei", Arial, sans-serif;
+      background: #f6f8fb;
+      color: #1f2937;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 28px 20px 40px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 38px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #4b5563;
+      margin-bottom: 26px;
+      font-size: 18px;
+    }
+
+    .panel {
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .input-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    input {
+      width: 360px;
+      max-width: 100%;
+      padding: 12px 14px;
+      font-size: 18px;
+      border: 2px solid #cbd5e1;
+      border-radius: 10px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #60a5fa;
+    }
+
+    button {
+      border: none;
+      background: #2563eb;
+      color: white;
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    button.secondary {
+      background: #64748b;
+    }
+
+    button.secondary:hover {
+      background: #475569;
+    }
+
+    button.success {
+      background: #059669;
+    }
+
+    button.success:hover {
+      background: #047857;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 20px;
+    }
+
+    .section-title {
+      font-size: 24px;
+      margin-bottom: 14px;
+      font-weight: bold;
+    }
+
+    .expression-view {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-height: 56px;
+      padding: 14px;
+      background: #f8fafc;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      margin-bottom: 16px;
+    }
+
+    .char-box {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: bold;
+      background: #e5e7eb;
+    }
+
+    .char-box.current {
+      background: #fde68a;
+      border: 2px solid #f59e0b;
+    }
+
+    .char-box.done {
+      background: #bfdbfe;
+    }
+
+    .char-box.error {
+      background: #fecaca;
+    }
+
+    .info-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 14px;
+      line-height: 1.8;
+      font-size: 18px;
+    }
+
+    .stack-box {
+      min-height: 360px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 10px;
+    }
+
+    .stack-item {
+      width: 120px;
+      text-align: center;
+      padding: 14px 0;
+      border-radius: 12px;
+      background: #93c5fd;
+      border: 2px solid #1d4ed8;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .stack-empty {
+      color: #6b7280;
+      font-size: 18px;
+      margin-top: 10px;
+    }
+
+    .log-list {
+      max-height: 300px;
+      overflow-y: auto;
+      padding-left: 0;
+      list-style: none;
+      margin: 0;
+    }
+
+    .log-item {
+      background: #f8fafc;
+      border-left: 5px solid #60a5fa;
+      margin-bottom: 10px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      line-height: 1.7;
+    }
+
+    .result {
+      font-size: 22px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .success-text {
+      color: #047857;
+    }
+
+    .error-text {
+      color: #dc2626;
+    }
+
+    .hint {
+      color: #475569;
+      font-size: 16px;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧩 括號匹配 Stack 模擬網站</h1>
+    <div class="subtitle">用一步一步的方式，理解 Stack 如何檢查括號是否正確配對</div>
+
+    <div class="panel">
+      <div class="input-row">
+        <input id="expressionInput" type="text" value="({[]})" placeholder="請輸入括號，例如：({[]})" />
+        <button onclick="startDemo()">開始分析</button>
+        <button class="secondary" onclick="nextStep()">下一步</button>
+        <button class="success" onclick="autoPlay()">自動播放</button>
+        <button class="secondary" onclick="resetDemo()">重設</button>
+      </div>
+      <div class="hint">只輸入這些符號：() [] {}</div>
+    </div>
+
+    <div class="layout">
+      <div>
+        <div class="panel">
+          <div class="section-title">目前分析過程</div>
+          <div id="expressionView" class="expression-view"></div>
+
+          <div class="info-card">
+            <div><strong>目前位置：</strong><span id="currentIndex">尚未開始</span></div>
+            <div><strong>目前字元：</strong><span id="currentChar">尚未開始</span></div>
+            <div><strong>動作：</strong><span id="currentAction">請先按「開始分析」</span></div>
+            <div><strong>原因說明：</strong><span id="currentReason">系統會一步一步告訴你為什麼要 Push 或 Pop。</span></div>
+          </div>
+
+          <div class="info-card">
+            <strong>Stack 規則提醒：</strong><br>
+            1. 遇到左括號：Push 進 Stack<br>
+            2. 遇到右括號：檢查 Stack 最上面是否能配對<br>
+            3. 能配對就 Pop，不能配對就失敗<br>
+            4. 最後 Stack 要是空的，才算成功
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="section-title">步驟紀錄</div>
+          <ul id="logList" class="log-list"></ul>
+          <div id="finalResult" class="result"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="panel">
+          <div class="section-title">Stack 視覺化</div>
+          <div id="stackBox" class="stack-box">
+            <div class="stack-empty">目前 Stack 是空的</div>
+          </div>
+          <div class="hint">最上面的元素，就是 Stack 的頂端</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const leftBrackets = ['(', '[', '{'];
+    const rightBrackets = [')', ']', '}'];
+    const matchMap = {
+      ')': '(',
+      ']': '[',
+      '}': '{'
+    };
+
+    let chars = [];
+    let stack = [];
+    let currentStep = 0;
+    let started = false;
+    let finished = false;
+    let failed = false;
+    let timer = null;
+
+    function renderExpression(activeIndex = -1, errorIndex = -1) {
+      const container = document.getElementById("expressionView");
+      container.innerHTML = "";
+
+      if (chars.length === 0) {
+        container.innerHTML = "<div>請先輸入括號字串後開始分析</div>";
+        return;
+      }
+
+      chars.forEach((ch, index) => {
+        const div = document.createElement("div");
+        div.className = "char-box";
+
+        if (index < activeIndex) div.classList.add("done");
+        if (index === activeIndex) div.classList.add("current");
+        if (index === errorIndex) div.classList.add("error");
+
+        div.textContent = ch;
+        container.appendChild(div);
+      });
+    }
+
+    function renderStack() {
+      const stackBox = document.getElementById("stackBox");
+      stackBox.innerHTML = "";
+
+      if (stack.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "stack-empty";
+        empty.textContent = "目前 Stack 是空的";
+        stackBox.appendChild(empty);
+        return;
+      }
+
+      for (let i = 0; i < stack.length; i++) {
+        const item = document.createElement("div");
+        item.className = "stack-item";
+        item.textContent = stack[i];
+        stackBox.appendChild(item);
+      }
+    }
+
+    function addLog(text) {
+      const li = document.createElement("li");
+      li.className = "log-item";
+      li.innerHTML = text;
+      document.getElementById("logList").appendChild(li);
+    }
+
+    function setInfo(indexText, charText, actionText, reasonText) {
+      document.getElementById("currentIndex").textContent = indexText;
+      document.getElementById("currentChar").textContent = charText;
+      document.getElementById("currentAction").textContent = actionText;
+      document.getElementById("currentReason").textContent = reasonText;
+    }
+
+    function clearResult() {
+      const result = document.getElementById("finalResult");
+      result.textContent = "";
+      result.className = "result";
+    }
+
+    function setSuccess(text) {
+      const result = document.getElementById("finalResult");
+      result.textContent = text;
+      result.className = "result success-text";
+    }
+
+    function setError(text) {
+      const result = document.getElementById("finalResult");
+      result.textContent = text;
+      result.className = "result error-text";
+    }
+
+    function validateInput(str) {
+      return /^[()\[\]{}]*$/.test(str);
+    }
+
+    function startDemo() {
+      stopAuto();
+
+      const input = document.getElementById("expressionInput").value.trim();
+
+      if (input.length === 0) {
+        alert("請先輸入括號字串。");
+        return;
+      }
+
+      if (!validateInput(input)) {
+        alert("只能輸入括號：() [] {}");
+        return;
+      }
+
+      chars = input.split("");
+      stack = [];
+      currentStep = 0;
+      started = true;
+      finished = false;
+      failed = false;
+
+      document.getElementById("logList").innerHTML = "";
+      clearResult();
+
+      renderExpression(0);
+      renderStack();
+      setInfo("第 1 個字元", chars[0], "準備開始", "我們會從左到右，一個一個檢查字元。");
+      addLog(`開始分析字串：<strong>${input}</strong>`);
+    }
+
+    function nextStep() {
+      if (!started) {
+        alert("請先按「開始分析」");
+        return;
+      }
+
+      if (finished) {
+        return;
+      }
+
+      if (currentStep >= chars.length) {
+        if (stack.length === 0) {
+          setSuccess("✅ 所有括號都成功配對，Stack 也為空，所以這是正確的括號字串。");
+          addLog("分析完成：所有字元都處理完，且 Stack 為空，所以匹配成功。");
+        } else {
+          setError("❌ 字元已經處理完，但 Stack 還有未配對的左括號，所以匹配失敗。");
+          addLog(`分析完成：Stack 還剩下 <strong>${stack.join("、")}</strong>，表示還有左括號沒有被關閉。`);
+        }
+        finished = true;
+        setInfo("分析結束", "-", "完成", "最後要檢查 Stack 是否為空，為空才算完全匹配。");
+        renderExpression(chars.length);
+        return;
+      }
+
+      const ch = chars[currentStep];
+      renderExpression(currentStep);
+
+      if (leftBrackets.includes(ch)) {
+        stack.push(ch);
+        setInfo(
+          `第 ${currentStep + 1} 個字元`,
+          ch,
+          "Push 進 Stack",
+          `因為「${ch}」是左括號，所以先放進 Stack，等待之後的右括號來配對。`
+        );
+        addLog(`讀到第 ${currentStep + 1} 個字元 <strong>${ch}</strong>：它是左括號，所以 <strong>Push</strong> 進 Stack。`);
+        renderStack();
+        currentStep++;
+        return;
+      }
+
+      if (rightBrackets.includes(ch)) {
+        if (stack.length === 0) {
+          failed = true;
+          finished = true;
+          setInfo(
+            `第 ${currentStep + 1} 個字元`,
+            ch,
+            "匹配失敗",
+            `讀到右括號「${ch}」時，Stack 卻是空的，表示它前面沒有對應的左括號。`
+          );
+          addLog(`讀到第 ${currentStep + 1} 個字元 <strong>${ch}</strong>：這是右括號，但 Stack 是空的，所以失敗。`);
+          renderExpression(currentStep, currentStep);
+          setError("❌ 匹配失敗：出現右括號時，Stack 裡沒有可對應的左括號。");
+          renderStack();
+          return;
+        }
+
+        const top = stack[stack.length - 1];
+
+        if (top === matchMap[ch]) {
+          stack.pop();
+          setInfo(
+            `第 ${currentStep + 1} 個字元`,
+            ch,
+            "Pop 出 Stack",
+            `讀到右括號「${ch}」，而 Stack 最上面是「${top}」，兩者可以配對，所以將最上面的左括號 Pop 出來。`
+          );
+          addLog(`讀到第 ${currentStep + 1} 個字元 <strong>${ch}</strong>：Stack 頂端是 <strong>${top}</strong>，可成功配對，所以 <strong>Pop</strong>。`);
+          renderStack();
+          currentStep++;
+          return;
+        } else {
+          failed = true;
+          finished = true;
+          setInfo(
+            `第 ${currentStep + 1} 個字元`,
+            ch,
+            "匹配失敗",
+            `讀到右括號「${ch}」，但 Stack 最上面是「${top}」，兩者不能配對，所以失敗。`
+          );
+          addLog(`讀到第 ${currentStep + 1} 個字元 <strong>${ch}</strong>：Stack 頂端是 <strong>${top}</strong>，不能和它配對，所以失敗。`);
+          renderExpression(currentStep, currentStep);
+          setError(`❌ 匹配失敗：右括號 ${ch} 和 Stack 頂端 ${top} 不相符。`);
+          renderStack();
+          return;
+        }
+      }
+    }
+
+    function autoPlay() {
+      if (!started) {
+        alert("請先按「開始分析」");
+        return;
+      }
+
+      stopAuto();
+      timer = setInterval(() => {
+        if (finished) {
+          stopAuto();
+        } else {
+          nextStep();
+        }
+      }, 1200);
+    }
+
+    function stopAuto() {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+    }
+
+    function resetDemo() {
+      stopAuto();
+      chars = [];
+      stack = [];
+      currentStep = 0;
+      started = false;
+      finished = false;
+      failed = false;
+
+      document.getElementById("logList").innerHTML = "";
+      clearResult();
+      renderExpression();
+      renderStack();
+      setInfo("尚未開始", "尚未開始", "請先按「開始分析」", "系統會一步一步告訴你為什麼要 Push 或 Pop。");
+    }
+
+    resetDemo();
+  </script>
+</body>
+</html>
